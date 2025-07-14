@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Midjourney Review Progress Calendar</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="container py-16 flex flex-col gap-16">
+      <!-- Jump Inputs -->
+      <section class="flex items-center gap-16 flex-wrap" aria-label="Jump Navigation">
+        <div class="form-group">
+          <label for="jumpMonthInput" class="form-label">Jump to month</label>
+          <input type="month" id="jumpMonthInput" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label for="jumpDateInput" class="form-label">Jump to date</label>
+          <input type="date" id="jumpDateInput" class="form-control" />
+        </div>
+      </section>
+
+      <!-- Calendar Header -->
+      <header class="flex items-center justify-between gap-8" aria-label="Calendar Navigation">
+        <button
+          id="prevMonthBtn"
+          class="btn btn--secondary btn--sm"
+          aria-label="Previous Month"
+        >
+          ◀
+        </button>
+        <h2 id="monthYear" class="m-0"></h2>
+        <button
+          id="nextMonthBtn"
+          class="btn btn--secondary btn--sm"
+          aria-label="Next Month"
+        >
+          ▶
+        </button>
+      </header>
+
+      <!-- Days of Week -->
+      <div class="calendar-days-of-week grid-7 uppercase text-xs text-center">
+        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+      </div>
+
+      <!-- Calendar Grid -->
+      <section
+        id="calendarGrid"
+        class="calendar-grid grid-7 gap-4"
+        aria-label="Calendar Dates"
+      ></section>
+
+      <!-- Progress Stats -->
+      <section class="card">
+        <div class="card__body flex items-center justify-between flex-wrap gap-8">
+          <div id="progressStats" class="status status--info">0/0 days reviewed</div>
+          <button id="clearAllBtn" class="btn btn--outline btn--sm">Clear All</button>
+        </div>
+      </section>
+
+      <!-- Actions -->
+      <footer class="flex items-center gap-8 flex-wrap">
+        <button id="exportBtn" class="btn btn--primary btn--sm">Export JSON</button>
+        <button id="importBtn" class="btn btn--secondary btn--sm">Import JSON</button>
+        <input type="file" id="importInput" accept="application/json" class="hidden" />
+      </footer>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
