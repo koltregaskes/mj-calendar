@@ -148,6 +148,7 @@ class MidjourneyCalendar {
       const hue = Math.round(pct * 120); // 0 = red, 120 = green
       const saturation = 80;
       const lightness = 90 - Math.round(pct * 25);
+      const borderLightness = Math.max(lightness - 18, 32);
 
       const btn = document.createElement('button');
       btn.className = 'calendar-day';
@@ -156,6 +157,7 @@ class MidjourneyCalendar {
       btn.dataset.date = cellKey;
       btn.style.setProperty('--day-hue', hue);
       btn.style.setProperty('--day-lightness', `${lightness}%`);
+      btn.style.setProperty('--day-border-lightness', `${borderLightness}%`);
       btn.dataset.pct = pct.toFixed(2);
       btn.title = `${completed}/${total} tasks done`;
 

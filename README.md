@@ -4,10 +4,11 @@ A simple web calendar to track your daily Midjourney workflow across multiple ta
 
 ## What you get
 - Modern calendar UI tuned for daily task checklists.
-- Color-coded progress per day (red → amber → green).
-- Automatic saving in your browser (no server required).
+- Color-coded progress per day (red when empty → amber as you tick → green on completion).
+- Automatic saving in your browser the moment you tick a box (no server required).
 - Import/export JSON backups.
 - Manageable task list with defaults for Midjourney routines.
+- 2026-ready visuals with keyboard support and responsive layout.
 
 ## AI-ready by design
 - Clear JSON schema for MCP/agent pipelines and llm-friendly audits.
