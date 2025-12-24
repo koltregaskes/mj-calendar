@@ -8,64 +8,71 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <main class="container py-16 flex flex-col gap-16">
-      <!-- Jump Inputs -->
-      <section class="flex items-center gap-16 flex-wrap" aria-label="Jump Navigation">
-        <div class="form-group">
-          <label for="jumpMonthInput" class="form-label">Jump to month</label>
-          <input type="month" id="jumpMonthInput" class="form-control" />
+    <main class="shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">AI-first Midjourney cockpit</p>
+          <h1>Review calendar</h1>
+          <p class="lede">Track images, videos, publishing, and any extras with a future-ready calendar.</p>
         </div>
-        <div class="form-group">
-          <label for="jumpDateInput" class="form-label">Jump to date</label>
-          <input type="date" id="jumpDateInput" class="form-control" />
+        <div class="hero__actions">
+          <button id="exportBtn" class="btn btn--ghost">Export JSON</button>
+          <button id="importBtn" class="btn btn--primary">Import JSON</button>
+          <input type="file" id="importInput" accept="application/json" class="hidden" />
         </div>
-      </section>
-
-      <!-- Calendar Header -->
-      <header class="flex items-center justify-between gap-8" aria-label="Calendar Navigation">
-        <button
-          id="prevMonthBtn"
-          class="btn btn--secondary btn--sm"
-          aria-label="Previous Month"
-        >
-          ◀
-        </button>
-        <h2 id="monthYear" class="m-0"></h2>
-        <button
-          id="nextMonthBtn"
-          class="btn btn--secondary btn--sm"
-          aria-label="Next Month"
-        >
-          ▶
-        </button>
       </header>
 
-      <!-- Days of Week -->
-      <div class="calendar-days-of-week grid-7 uppercase text-xs text-center">
-        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
-      </div>
+      <section class="panel-grid">
+        <section class="panel">
+          <div class="panel__head">
+            <div class="form-inline">
+              <label for="jumpMonthInput">Month</label>
+              <input type="month" id="jumpMonthInput" />
+            </div>
+            <div class="form-inline">
+              <label for="jumpDateInput">Jump to date</label>
+              <input type="date" id="jumpDateInput" />
+            </div>
+            <div class="nav-buttons">
+              <button id="prevMonthBtn" class="btn btn--ghost" aria-label="Previous Month">◀</button>
+              <button id="nextMonthBtn" class="btn btn--ghost" aria-label="Next Month">▶</button>
+            </div>
+          </div>
 
-      <!-- Calendar Grid -->
-      <section
-        id="calendarGrid"
-        class="calendar-grid grid-7 gap-4"
-        aria-label="Calendar Dates"
-      ></section>
+          <div class="calendar-header">
+            <h2 id="monthYear"></h2>
+            <div id="progressStats" class="status status--info">Loading…</div>
+          </div>
 
-      <!-- Progress Stats -->
-      <section class="card">
-        <div class="card__body flex items-center justify-between flex-wrap gap-8">
-          <div id="progressStats" class="status status--info">0/0 days reviewed</div>
-          <button id="clearAllBtn" class="btn btn--outline btn--sm">Clear All</button>
-        </div>
+          <div class="calendar-days"> <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span> </div>
+          <section id="calendarGrid" class="calendar-grid" aria-label="Calendar Dates"></section>
+          <div class="panel__footer">
+            <button id="clearAllBtn" class="btn btn--outline">Clear All</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head">
+            <div>
+              <p class="eyebrow">Selected day</p>
+              <h3 id="selectedDateLabel"></h3>
+              <p id="taskSummary" class="subtle"></p>
+            </div>
+            <div class="task-meter" aria-hidden="true">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <div id="taskList" class="task-list" aria-live="polite"></div>
+          <form id="addTaskForm" class="add-task" autocomplete="off">
+            <input id="addTaskInput" type="text" placeholder="Add another task (e.g., Publish to Instagram)" />
+            <button type="submit" class="btn btn--primary">Add</button>
+          </form>
+          <div class="preset-row">
+            <p class="subtle">Task presets</p>
+            <div id="presetsList" class="pill-row"></div>
+          </div>
+        </section>
       </section>
-
-      <!-- Actions -->
-      <footer class="flex items-center gap-8 flex-wrap">
-        <button id="exportBtn" class="btn btn--primary btn--sm">Export JSON</button>
-        <button id="importBtn" class="btn btn--secondary btn--sm">Import JSON</button>
-        <input type="file" id="importInput" accept="application/json" class="hidden" />
-      </footer>
     </main>
 
     <script src="app.js"></script>
