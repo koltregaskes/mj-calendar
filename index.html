@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <main class="shell">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <main id="main" class="shell">
       <header class="hero">
         <div>
           <p class="eyebrow">AI-first Midjourney cockpit</p>
@@ -41,7 +42,7 @@
 
           <div class="calendar-header">
             <h2 id="monthYear"></h2>
-            <div id="progressStats" class="status status--info">Loading…</div>
+            <div id="progressStats" class="status status--info" role="status" aria-live="polite">Loading…</div>
           </div>
 
           <div class="calendar-days">

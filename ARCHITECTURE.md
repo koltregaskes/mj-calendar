@@ -15,5 +15,6 @@ The app is a lightweight, client-only single-page experience:
   3. Selecting a day updates the task panel; toggling a checkbox writes to memory and `localStorage`, then re-renders.
 - **Visual logic**: Each day button sets CSS variables for hue (red→green), lightness, and border lightness. Inline bars + mini task dots show partial vs. complete progress at a glance.
 - **Styling**: Pure CSS with CSS variables for light/neon palette, responsive layout, and animation cues for focus/selection.
-- **Accessibility**: Semantic controls, keyboard navigation inside the grid, and `aria` labels for interactive elements.
+- **Accessibility**: Semantic controls, keyboard navigation inside the grid, skip link to jump to content, visible focus styles, and `role="status"` + `aria-live` on progress text for screen readers.
+- **Automation**: Runs fully in-browser; quick checks use `npx @axe-core/cli index.html` for accessibility without extra setup.
 - **AI-first readiness**: Code is organized for future AI agents (e.g., MCP/Skills/llm.tst) to read/modify easily: clear data boundaries, exported JSON schema, and documented storage keys ready for agent pipelines.

@@ -1,4 +1,9 @@
 # Changelog
+## 2025-02-28 v1.1.5
+- Added AGENTS.md and llms.txt to guide AI helpers and keep standards clear.
+- Added ACCESSIBILITY.md plus skip link and status roles for WCAG 2.2 AA support.
+- Documented setup/getting-started updates, .env example, and accessibility check command.
+
 ## 2025-02-27 v1.1.4
 - Added COSTS.md to spell out expected costs (mostly free) and how to keep them low.
 - Summarized cost highlights in README for quick reference.

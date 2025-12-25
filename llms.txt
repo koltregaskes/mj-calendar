@@ -1,0 +1,37 @@
+Midjourney Review Calendar — AI helper guide
+===========================================
+
+Purpose
+- Tracks daily Midjourney tasks (images, videos, publishing, extras) with autosave in the browser.
+- Data lives in localStorage; JSON import/export keeps it portable for agents or backups.
+
+Key entry points
+- UI: index.html (loads style.css, app.js).
+- Logic: app.js (MidjourneyCalendar class; storage keys, calendar render, task panel, import/export).
+- Styles: style.css (2026-inspired theme, responsive grid, focus states).
+
+How to run
+1) cd /workspace/mj-calendar
+2) Open index.html in a browser (double-click or use `python -m http.server 8000` then visit http://localhost:8000 ).
+3) No API keys required. If you add one later, place it in .env (see .env.example) and keep it out of commits.
+
+Useful commands (from repo root)
+- python -m http.server 8000  # quick local server
+- npx @axe-core/cli index.html  # accessibility audit (requires Node/npm)
+
+Docs map
+- README.md: overview + How to Get Started.
+- ARCHITECTURE.md: storage model, UI flow, files.
+- SETUP.md: running locally/hosting.
+- USAGE.md: how to tick tasks, add tasks, import/export.
+- TROUBLESHOOTING.md: quick fixes.
+- PLAN.md: task history and status icons.
+- CHANGELOG.md: dated version entries.
+- COSTS.md: expected running/hosting/API costs and limits.
+- ACCESSIBILITY.md: WCAG 2.2 AA targets and how to test.
+- AGENTS.md: house rules for agents.
+
+AI-readiness tips
+- Use the JSON export schema (versioned payload with tasks + days) for MCP/skills.
+- Avoid hard-coding secrets; prefer environment variables and document new keys in SETUP/README/COSTS.
+- Keep UI changes accessible (focus states, aria labels, keyboard navigation).

@@ -6,6 +6,7 @@ The calendar is a static, in-browser app, so there are no required running costs
 - **Local use:** Free. Everything saves to your browser via localStorage.
 - **Static hosting (optional):** Free on most hosts (GitHub Pages, Netlify, Vercel) unless you add custom domains or very high traffic (rare for personal tracking).
 - **Backups:** Export/import JSON is manual and free. If you automate backups to cloud storage (e.g., Dropbox/Google Drive), those services may charge if you exceed their free tiers.
+- **Tooling:** Optional `npx @axe-core/cli index.html` accessibility check downloads a small npm package (free; uses a little bandwidth once per machine).
 
 ## API usage
 - **None required.** The app does not call external APIs by default, so there are no API call costs or rate limits to manage.

@@ -13,6 +13,7 @@
 - ✅ Add per-day mini progress visuals (bar + dots) so saved ticks are obvious after refresh.
 - ✅ Fix calendar tile loading so saved ticks never break the page and dots always show.
 - ✅ Document expected costs and how to keep the project free/low-cost.
+- ✅ Add AI-helper docs (AGENTS.md, llms.txt) and accessibility guidance/tests.
 
 ## Task History
 - ✅ Define calendar data model for multi-task days and persistence.
@@ -20,3 +21,4 @@
 - ✅ Add documentation set (architecture, setup, usage, troubleshooting, changelog).
 - ✅ Polish gradient styling and fix weekday header markup.
 - ✅ Guard rendering against missing entries so saved progress displays reliably.
+- ✅ Add skip link + status roles for WCAG 2.2 AA and document the axe accessibility check.

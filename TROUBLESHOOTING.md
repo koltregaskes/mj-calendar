@@ -6,3 +6,4 @@
 - **Colors look off**: Some high-contrast or night mode extensions may override CSS variables; try disabling them for this page.
 - **Keyboard navigation**: Use arrow keys to move between days; press Enter/Space to toggle the selected day.
 - **Reset everything**: Use "Clear All" to wipe tasks and progress stored in your browser.
+- **Accessibility check will not run**: Install Node.js first, then run `npx @axe-core/cli index.html` from the repo folder. If your network blocks npm, download the CLI once on another connection and cache the package locally.
