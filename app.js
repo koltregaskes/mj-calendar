@@ -1,21 +1,44 @@
 /*
   Midjourney Review Progress Calendar
-  Author: Perplexity AI Assistant
-  Description: Single-page application allowing users to track reviewed calendar days,
-               jump between months/dates, and import/export progress as JSON.
+  Author: AI Assistant
+  Description: Multi-task daily tracker with persistent storage, import/export,
+               and modern UI for Midjourney workflows.
+
+  Notes for maintainers (AI-first ready):
+  - Local persistence keeps everything in-browser (no server risk).
+  - JSON export/import is stable for MCP/agent pipelines.
+  - The UI is intentionally annotated for future automation or LLM agents.
 */
+
+const STORAGE_KEYS = {
+  tasks: 'mj-calendar:tasks',
+  days: 'mj-calendar:days'
+};
+
+const DEFAULT_TASKS = [
+  { id: 'review-images', label: 'Review images + upscale' },
+  { id: 'review-videos', label: 'Review videos + extend' },
+  { id: 'publish-favorites', label: 'Publish favourite images' }
+];
 
 class MidjourneyCalendar {
   constructor() {
-    // Core state
-    this.currentDate = new Date(); // System today
-    this.viewDate = new Date(); // Month currently displayed
+    this.currentDate = new Date();
+    this.viewDate = new Date();
+    this.selectedDate = new Date();
 
-    // Persisted review data, key = 'YYYY-MM-DD', value = true
-    this.reviewData = {};
+    this.tasks = this.loadFromStorage(STORAGE_KEYS.tasks, DEFAULT_TASKS);
+    this.days = this.loadFromStorage(STORAGE_KEYS.days, {});
 
-    // Cached DOM references
-    this.dom = {
+    this.dom = this.bindDom();
+    this.setupEventListeners();
+    this.renderCalendar();
+    this.renderTaskPanel();
+    this.updateProgressStats();
+  }
+
+  bindDom() {
+    return {
       monthYear: document.getElementById('monthYear'),
       calendarGrid: document.getElementById('calendarGrid'),
       progressStats: document.getElementById('progressStats'),
@@ -26,59 +49,89 @@ class MidjourneyCalendar {
       exportBtn: document.getElementById('exportBtn'),
       importBtn: document.getElementById('importBtn'),
       importInput: document.getElementById('importInput'),
-      clearAllBtn: document.getElementById('clearAllBtn')
+      clearAllBtn: document.getElementById('clearAllBtn'),
+      taskList: document.getElementById('taskList'),
+      taskSummary: document.getElementById('taskSummary'),
+      selectedDateLabel: document.getElementById('selectedDateLabel'),
+      addTaskForm: document.getElementById('addTaskForm'),
+      addTaskInput: document.getElementById('addTaskInput'),
+      presetsList: document.getElementById('presetsList')
     };
-
-    // Initialize application
-    this.setupEventListeners();
-    this.renderCalendar();
-    this.updateProgressStats();
   }
 
-  /* ==============================
-     Helper / Utility Functions
-  ============================== */
+  loadFromStorage(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (_) {
+      return fallback;
+    }
+  }
 
-  /**
-   * formatDateKey
-   * Converts a JS Date object to ISO string key YYYY-MM-DD
-   */
+  persistState() {
+    localStorage.setItem(STORAGE_KEYS.tasks, JSON.stringify(this.tasks));
+    localStorage.setItem(STORAGE_KEYS.days, JSON.stringify(this.days));
+  }
+
   formatDateKey(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
-  /** Checks if provided date is today (system date) */
   isToday(date) {
     return this.formatDateKey(date) === this.formatDateKey(this.currentDate);
   }
 
-  /** Checks if date has been marked reviewed */
-  isReviewed(date) {
-    return this.reviewData[this.formatDateKey(date)] === true;
+  getDayEntry(date) {
+    const key = this.formatDateKey(date);
+    if (!this.days[key]) {
+      this.days[key] = { tasks: {} };
+    }
+    // Ensure every task has a stored value for this date (defaults to false)
+    this.tasks.forEach((task) => {
+      if (this.days[key].tasks[task.id] === undefined) {
+        this.days[key].tasks[task.id] = false;
+      }
+    });
+    return { key, entry: this.days[key] };
   }
 
-  /** Toggle the reviewed state of a date */
-  toggleReview(date) {
-    const key = this.formatDateKey(date);
-    if (this.reviewData[key]) {
-      delete this.reviewData[key];
-    } else {
-      this.reviewData[key] = true;
-    }
+  toggleTask(date, taskId, value) {
+    const { entry } = this.getDayEntry(date);
+    entry.tasks[taskId] = value;
+    this.persistState();
+    this.renderCalendar();
+    this.renderTaskPanel();
     this.updateProgressStats();
   }
 
-  /* ==============================
-     Rendering Functions
-  ============================== */
+  addTask(label) {
+    const trimmed = label.trim();
+    if (!trimmed) return;
+    const id = trimmed.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `task-${Date.now()}`;
+    const exists = this.tasks.some((t) => t.id === id || t.label.toLowerCase() === trimmed.toLowerCase());
+    if (exists) return alert('Task already exists.');
 
-  /**
-   * renderCalendar
-   * Generates 6-week (42-day) grid starting Sunday before month 1st.
-   */
+    this.tasks.push({ id, label: trimmed });
+    Object.keys(this.days).forEach((key) => {
+      this.days[key].tasks[id] = false;
+    });
+    this.persistState();
+    this.renderCalendar();
+    this.renderTaskPanel();
+    this.renderPresets();
+  }
+
+  getDayProgress(date) {
+    const { entry } = this.getDayEntry(date);
+    const total = this.tasks.length || 1;
+    const completed = this.tasks.reduce((sum, task) => sum + (entry.tasks[task.id] ? 1 : 0), 0);
+    const pct = completed / total;
+    return { completed, total, pct };
+  }
+
   renderCalendar(flashDateKey = null) {
     const { calendarGrid, monthYear } = this.dom;
     calendarGrid.innerHTML = '';
@@ -86,103 +139,182 @@ class MidjourneyCalendar {
     const year = this.viewDate.getFullYear();
     const month = this.viewDate.getMonth();
 
-    // Header text
     const monthNames = [
       'January','February','March','April','May','June',
       'July','August','September','October','November','December'
     ];
     monthYear.textContent = `${monthNames[month]} ${year}`;
 
-    // Determine the first cell date (Sunday before the 1st)
     const firstOfMonth = new Date(year, month, 1);
     const startDate = new Date(firstOfMonth);
     startDate.setDate(firstOfMonth.getDate() - firstOfMonth.getDay());
 
-    // Create 42 day cells
     for (let i = 0; i < 42; i++) {
       const cellDate = new Date(startDate);
       cellDate.setDate(startDate.getDate() + i);
       const cellKey = this.formatDateKey(cellDate);
       const isCurrentMonth = cellDate.getMonth() === month;
 
+      const { pct, completed, total } = this.getDayProgress(cellDate);
+      const hue = Math.round(pct * 120); // 0 = red, 120 = green
+      const saturation = 80;
+      const lightness = 90 - Math.round(pct * 25);
+      const borderLightness = Math.max(lightness - 18, 32);
+
       const btn = document.createElement('button');
       btn.className = 'calendar-day';
-      btn.textContent = cellDate.getDate();
+      btn.innerHTML = `
+        <div class="calendar-day__date">${cellDate.getDate()}</div>
+        <div class="calendar-day__progress" role="presentation">
+          <div class="calendar-day__bar">
+            <span style="width: ${Math.round(pct * 100)}%"></span>
+          </div>
+          <div class="calendar-day__dots" aria-hidden="true"></div>
+        </div>
+        <p class="calendar-day__caption">${completed}/${total} done</p>
+      `;
       btn.setAttribute('type', 'button');
-      btn.setAttribute('aria-pressed', this.isReviewed(cellDate));
+      btn.dataset.date = cellKey;
+      btn.style.setProperty('--day-hue', hue);
+      btn.style.setProperty('--day-lightness', `${lightness}%`);
+      btn.style.setProperty('--day-border-lightness', `${borderLightness}%`);
+      btn.dataset.pct = pct.toFixed(2);
+      btn.title = `${completed}/${total} tasks done`;
+      btn.setAttribute('aria-label', `${new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(cellDate)}: ${completed} of ${total} tasks done`);
 
-      // State classes
+      const dots = btn.querySelector('.calendar-day__dots');
+      this.tasks.forEach((task, idx) => {
+        if (idx >= 5) return; // keep the mini-row tidy
+        const dot = document.createElement('span');
+        dot.className = 'calendar-day__dot';
+        if (entry.tasks[task.id]) dot.classList.add('calendar-day__dot--done');
+        dot.title = task.label;
+        dots.appendChild(dot);
+      });
+
       if (!isCurrentMonth) btn.classList.add('calendar-day--other-month');
       if (this.isToday(cellDate)) btn.classList.add('calendar-day--today');
-      if (this.isReviewed(cellDate)) btn.classList.add('calendar-day--reviewed');
+      if (pct === 1) btn.classList.add('calendar-day--complete');
+      if (pct > 0 && pct < 1) btn.classList.add('calendar-day--partial');
+      if (pct === 0) btn.classList.add('calendar-day--empty');
       if (flashDateKey && cellKey === flashDateKey) {
         btn.classList.add('calendar-day--flash');
-        // Remove flash class after animation end to allow future flashes
         btn.addEventListener('animationend', () => btn.classList.remove('calendar-day--flash'), { once: true });
       }
 
-      // Only current month days are interactive
-      if (isCurrentMonth) {
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          this.toggleReview(cellDate);
-          // Re-render to update styles consistently
-          this.renderCalendar();
-        });
-      } else {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.selectedDate = cellDate;
+        this.renderTaskPanel();
+        this.highlightSelection(cellKey);
+      });
+
+      if (!isCurrentMonth) {
         btn.disabled = true;
         btn.setAttribute('tabindex', '-1');
       }
 
       calendarGrid.appendChild(btn);
     }
+
+    this.highlightSelection(this.formatDateKey(this.selectedDate));
   }
 
-  /**
-   * updateProgressStats
-   * Updates the statistics banner with counts & styling.
-   */
+  highlightSelection(targetKey) {
+    const buttons = this.dom.calendarGrid.querySelectorAll('.calendar-day');
+    buttons.forEach((btn) => {
+      const key = btn.dataset.date;
+      if (key === targetKey) {
+        btn.classList.add('calendar-day--selected');
+      } else {
+        btn.classList.remove('calendar-day--selected');
+      }
+    });
+  }
+
+  renderTaskPanel() {
+    const { taskList, selectedDateLabel, taskSummary } = this.dom;
+    const { entry } = this.getDayEntry(this.selectedDate);
+    const { completed, total, pct } = this.getDayProgress(this.selectedDate);
+
+    selectedDateLabel.textContent = new Intl.DateTimeFormat('en', { dateStyle: 'full' }).format(this.selectedDate);
+    taskSummary.textContent = `${completed}/${total} tasks done (${Math.round(pct * 100)}%) — autosaves instantly`;
+
+    taskList.innerHTML = '';
+    this.tasks.forEach((task) => {
+      const wrapper = document.createElement('label');
+      wrapper.className = 'task-row';
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = Boolean(entry.tasks[task.id]);
+      checkbox.addEventListener('change', () => this.toggleTask(this.selectedDate, task.id, checkbox.checked));
+
+      const title = document.createElement('span');
+      title.textContent = task.label;
+
+      wrapper.appendChild(checkbox);
+      wrapper.appendChild(title);
+      taskList.appendChild(wrapper);
+    });
+
+    const meterBars = document.querySelectorAll('.task-meter span');
+    const activeSegments = Math.round(pct * meterBars.length);
+    meterBars.forEach((bar, idx) => {
+      if (idx < activeSegments) {
+        bar.style.background = `linear-gradient(135deg, #7ae3ff, #9d7bff)`;
+      } else {
+        bar.style.background = 'rgba(255,255,255,0.12)';
+      }
+    });
+  }
+
+  renderPresets() {
+    const { presetsList } = this.dom;
+    presetsList.innerHTML = '';
+    this.tasks.forEach((task) => {
+      const chip = document.createElement('span');
+      chip.className = 'pill';
+      chip.textContent = task.label;
+      presetsList.appendChild(chip);
+    });
+  }
+
   updateProgressStats() {
     const { progressStats } = this.dom;
-
     const visibleYear = this.viewDate.getFullYear();
     const visibleMonth = this.viewDate.getMonth();
     const daysInMonth = new Date(visibleYear, visibleMonth + 1, 0).getDate();
 
-    // Count reviewed days in the current visible month
-    let monthReviewed = 0;
+    let completedDays = 0;
+    let partialDays = 0;
+    let totalTasks = 0;
+    let completedTasks = 0;
+
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(visibleYear, visibleMonth, day);
-      const key = this.formatDateKey(date);
-      if (this.reviewData[key] === true) {
-        monthReviewed++;
-      }
+      const { completed, total, pct } = this.getDayProgress(date);
+      totalTasks += total;
+      completedTasks += completed;
+      if (pct === 1) completedDays += 1;
+      else if (pct > 0) partialDays += 1;
     }
 
-    const totalReviewed = Object.keys(this.reviewData).length;
-    const percentage = daysInMonth > 0 ? Math.round((monthReviewed / daysInMonth) * 100) : 0;
-    
-    progressStats.textContent = `Reviewed ${monthReviewed} / ${daysInMonth} days this month (${percentage}%) — Total: ${totalReviewed}`;
-
-    // Adjust status type classes
+    const pct = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    progressStats.textContent = `${completedDays} complete days, ${partialDays} in-progress — ${completedTasks}/${totalTasks} tasks (${pct}%) this month`;
     progressStats.className = 'status';
-    const pct = (monthReviewed / daysInMonth);
-    if (pct >= 0.8) progressStats.classList.add('status--success');
-    else if (pct >= 0.4) progressStats.classList.add('status--warning');
+    if (pct >= 80) progressStats.classList.add('status--success');
+    else if (pct >= 40) progressStats.classList.add('status--warning');
     else progressStats.classList.add('status--info');
   }
 
-  /* ==============================
-     Navigation & Event Binding
-  ============================== */
   setupEventListeners() {
     const {
       prevBtn, nextBtn, jumpMonthInput, jumpDateInput,
-      exportBtn, importBtn, importInput, clearAllBtn
+      exportBtn, importBtn, importInput, clearAllBtn,
+      addTaskForm, addTaskInput
     } = this.dom;
 
-    // Month navigation - using event delegation to prevent interference
     prevBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -201,100 +333,104 @@ class MidjourneyCalendar {
       this.syncJumpInputs();
     });
 
-    // Jump to month input
     jumpMonthInput.addEventListener('change', () => {
       if (!jumpMonthInput.value) return;
       const [year, month] = jumpMonthInput.value.split('-').map(Number);
       this.viewDate = new Date(year, month - 1, 1);
       this.renderCalendar();
       this.updateProgressStats();
-      // Clear specific date highlight
       jumpDateInput.value = '';
     });
 
-    // Jump to date input
     jumpDateInput.addEventListener('change', () => {
       if (!jumpDateInput.value) return;
       const [year, month, day] = jumpDateInput.value.split('-').map(Number);
       this.viewDate = new Date(year, month - 1, 1);
-      const key = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-      this.renderCalendar(key); // Flash this date
+      const key = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      this.selectedDate = new Date(year, month - 1, day);
+      this.renderCalendar(key);
       this.updateProgressStats();
       this.syncJumpInputs();
+      this.renderTaskPanel();
     });
 
-    // Export JSON - prevent event bubbling
     exportBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       this.exportData();
     });
 
-    // Import JSON
     importBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       importInput.click();
     });
-    
-    importInput.addEventListener('change', e => {
+
+    importInput.addEventListener('change', (e) => {
       const file = e.target.files?.[0];
       if (file) this.importData(file);
     });
 
-    // Clear all data
     clearAllBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      if (confirm('Clear all reviewed days?')) {
-        this.reviewData = {};
+      if (confirm('Clear all tasks and progress?')) {
+        this.tasks = [...DEFAULT_TASKS];
+        this.days = {};
+        this.persistState();
         this.renderCalendar();
+        this.renderTaskPanel();
+        this.renderPresets();
         this.updateProgressStats();
+        this.syncJumpInputs();
       }
     });
 
-    // Keyboard arrow navigation inside grid
-    document.addEventListener('keydown', e => this.handleKeyboardNavigation(e));
+    addTaskForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.addTask(addTaskInput.value);
+      addTaskInput.value = '';
+    });
 
-    // Initialize jumpMonth input with current month
+    document.addEventListener('keydown', (e) => this.handleKeyboardNavigation(e));
+
     this.syncJumpInputs();
+    this.renderPresets();
   }
 
-  /** Sync jump inputs with the current visible month */
   syncJumpInputs() {
     const y = this.viewDate.getFullYear();
-    const m = String(this.viewDate.getMonth() + 1).padStart(2,'0');
+    const m = String(this.viewDate.getMonth() + 1).padStart(2, '0');
     this.dom.jumpMonthInput.value = `${y}-${m}`;
   }
 
-  /** Handle arrow key navigation across day cells */
   handleKeyboardNavigation(e) {
     const focused = document.activeElement;
     if (!focused || !focused.classList.contains('calendar-day')) return;
-    
+
     const gridButtons = Array.from(this.dom.calendarGrid.querySelectorAll('.calendar-day:not([disabled])'));
     if (!gridButtons.length) return;
-    
+
     const currentIndex = gridButtons.indexOf(focused);
     if (currentIndex === -1) return;
 
     let targetIndex = currentIndex;
 
     switch (e.key) {
-      case 'ArrowLeft': 
-        targetIndex = Math.max(0, currentIndex - 1); 
+      case 'ArrowLeft':
+        targetIndex = Math.max(0, currentIndex - 1);
         break;
-      case 'ArrowRight': 
-        targetIndex = Math.min(gridButtons.length - 1, currentIndex + 1); 
+      case 'ArrowRight':
+        targetIndex = Math.min(gridButtons.length - 1, currentIndex + 1);
         break;
-      case 'ArrowUp': 
-        targetIndex = Math.max(0, currentIndex - 7); 
+      case 'ArrowUp':
+        targetIndex = Math.max(0, currentIndex - 7);
         break;
-      case 'ArrowDown': 
-        targetIndex = Math.min(gridButtons.length - 1, currentIndex + 7); 
+      case 'ArrowDown':
+        targetIndex = Math.min(gridButtons.length - 1, currentIndex + 7);
         break;
-      case 'Enter': 
-      case ' ': 
+      case 'Enter':
+      case ' ':
         e.preventDefault();
         focused.click();
         return;
@@ -308,41 +444,44 @@ class MidjourneyCalendar {
     }
   }
 
-  /* ==============================
-     Import / Export
-  ============================== */
   exportData() {
-    try {
-      const json = JSON.stringify(this.reviewData, null, 2);
-      const blob = new Blob([json], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
+    const payload = {
+      version: '1.1.0',
+      tasks: this.tasks,
+      days: this.days
+    };
+    const json = JSON.stringify(payload, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
 
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `midjourney-review-${new Date().toISOString().split('T')[0]}.json`;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 100);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `midjourney-review-${new Date().toISOString().split('T')[0]}.json`;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
 
-      setTimeout(() => alert('Export successful!'), 150);
-    } catch (err) {
-      alert('Export failed: ' + err.message);
-    }
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
   }
 
   async importData(file) {
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-      if (typeof data !== 'object' || Array.isArray(data)) throw new Error('Invalid JSON format');
-      // Merge
-      this.reviewData = { ...this.reviewData, ...data };
+      if (!data || typeof data !== 'object') throw new Error('Invalid file');
+      if (!Array.isArray(data.tasks) || !data.days || typeof data.days !== 'object') {
+        throw new Error('Missing required keys');
+      }
+
+      this.tasks = data.tasks;
+      this.days = data.days;
+      this.persistState();
       this.renderCalendar();
+      this.renderTaskPanel();
+      this.renderPresets();
       this.updateProgressStats();
       alert('Import successful!');
     } catch (err) {
@@ -353,5 +492,4 @@ class MidjourneyCalendar {
   }
 }
 
-// Bootstrap when DOM ready
 window.addEventListener('DOMContentLoaded', () => new MidjourneyCalendar());
