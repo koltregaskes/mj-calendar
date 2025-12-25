@@ -10,7 +10,8 @@ The app is a lightweight, client-only single-page experience:
   - Export/import uses `{ version, tasks, days }` JSON to keep structure intact.
 - **State flow**:
   1. Load tasks + day data from `localStorage`, falling back to defaults.
-  2. Render calendar grid for the visible month with per-day progress colors derived from task completion percentage.
+  2. Render the calendar grid for the visible month with per-day progress colors derived from task completion percentage. Each tile
+     asks `getDayEntry` first, so missing entries are created before progress math to avoid render errors.
   3. Selecting a day updates the task panel; toggling a checkbox writes to memory and `localStorage`, then re-renders.
 - **Visual logic**: Each day button sets CSS variables for hue (red→green), lightness, and border lightness. Inline bars + mini task dots show partial vs. complete progress at a glance.
 - **Styling**: Pure CSS with CSS variables for light/neon palette, responsive layout, and animation cues for focus/selection.

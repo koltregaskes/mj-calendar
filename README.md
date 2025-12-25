@@ -8,6 +8,7 @@ A simple web calendar to track your daily Midjourney workflow across multiple ta
 - Automatic saving in your browser the moment you tick a box (no server required).
 - Import/export JSON backups.
 - Manageable task list with defaults for Midjourney routines.
+- Reload-safe tiles that keep your ticks visible every time you reopen the page.
 - 2026-ready visuals with keyboard support, responsive layout, and AI-ready JSON structure (MCP/skills friendly).
 
 ## AI-ready by design

@@ -1,4 +1,8 @@
 # Changelog
+## 2025-02-26 v1.1.3
+- Fixed the calendar tile rendering so saved ticks always load without errors and dots show correctly for each task.
+- Clarified docs to keep setup and usage simple for non-technical readers.
+- Kept the UI cues (red → green) and storage scheme ready for AI/agent tooling.
 
 ## 2025-02-24 v1.1.2
 - Added inline progress bars and task dots on each day tile so saved ticks are obvious after refresh.

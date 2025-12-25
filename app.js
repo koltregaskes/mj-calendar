@@ -124,8 +124,8 @@ class MidjourneyCalendar {
     this.renderPresets();
   }
 
-  getDayProgress(date) {
-    const { entry } = this.getDayEntry(date);
+  getDayProgress(date, existingEntry = null) {
+    const { entry } = existingEntry ? { entry: existingEntry } : this.getDayEntry(date);
     const total = this.tasks.length || 1;
     const completed = this.tasks.reduce((sum, task) => sum + (entry.tasks[task.id] ? 1 : 0), 0);
     const pct = completed / total;
@@ -155,7 +155,8 @@ class MidjourneyCalendar {
       const cellKey = this.formatDateKey(cellDate);
       const isCurrentMonth = cellDate.getMonth() === month;
 
-      const { pct, completed, total } = this.getDayProgress(cellDate);
+      const { entry } = this.getDayEntry(cellDate);
+      const { pct, completed, total } = this.getDayProgress(cellDate, entry);
       const hue = Math.round(pct * 120); // 0 = red, 120 = green
       const saturation = 80;
       const lightness = 90 - Math.round(pct * 25);
