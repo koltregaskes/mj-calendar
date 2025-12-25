@@ -12,6 +12,7 @@
 - ✅ Make day colors more readable (red → amber → green) and tidy weekday labels.
 - ✅ Add per-day mini progress visuals (bar + dots) so saved ticks are obvious after refresh.
 - ✅ Fix calendar tile loading so saved ticks never break the page and dots always show.
+- ✅ Document expected costs and how to keep the project free/low-cost.
 
 ## Task History
 - ✅ Define calendar data model for multi-task days and persistence.

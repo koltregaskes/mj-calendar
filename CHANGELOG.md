@@ -1,4 +1,8 @@
 # Changelog
+## 2025-02-27 v1.1.4
+- Added COSTS.md to spell out expected costs (mostly free) and how to keep them low.
+- Summarized cost highlights in README for quick reference.
+
 ## 2025-02-26 v1.1.3
 - Fixed the calendar tile rendering so saved ticks always load without errors and dots show correctly for each task.
 - Clarified docs to keep setup and usage simple for non-technical readers.

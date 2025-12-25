@@ -17,6 +17,11 @@ A simple web calendar to track your daily Midjourney workflow across multiple ta
 
 See [USAGE.md](USAGE.md) for quick steps, [SETUP.md](SETUP.md) for running the page, and [TROUBLESHOOTING.md](TROUBLESHOOTING.md) if you hit issues.
 
+## Costs in plain English
+- Running locally: **free**. Everything saves in your browser.
+- Hosting (optional): **usually free** on GitHub Pages/Netlify/Vercel unless you add a paid domain.
+- APIs: **none required** today. If you add AI/automation later, check [COSTS.md](COSTS.md) for rough ranges and safe limits.
+
 ## How to Get Started
 1) **Download the folder** (or clone the repo) to your computer.
 2) **Open `index.html` in your browser.** That’s it—no installs or servers needed.
