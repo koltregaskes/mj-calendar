@@ -1,7 +1,7 @@
 # Troubleshooting
 
-- **Progress is not saving**: Ensure your browser allows localStorage. Private/incognito modes may clear data on close.
-- **Import fails**: Confirm the JSON file was exported from this app and not edited manually. The format expects `version`, `tasks`, and `days` keys.
-- **Colors look off**: Some high-contrast or night mode extensions may override CSS variables; try disabling them for this page.
-- **Keyboard navigation**: Use arrow keys to move between days; press Enter/Space to toggle the selected day.
-- **Reset everything**: Use "Clear All" to wipe tasks and progress stored in your browser.
+- **Progress is not saving**: Make sure the browser allows `localStorage`. Private browsing modes may clear it when the window closes.
+- **Import fails**: Use a file exported by this app. Imported data must include `tasks` and `days`.
+- **A preset disappeared everywhere**: Deleting a preset removes its saved state from every day by design.
+- **Keyboard navigation feels odd**: Arrow keys move focus across visible days, then `Enter` or `Space` selects the focused day.
+- **I want a fresh start**: Use `Clear all` to wipe the browser-stored calendar completely.

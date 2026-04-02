@@ -1,7 +1,8 @@
 # Setup
 
-1. Download or clone the repository.
-2. Open `index.html` in any modern browser (Chrome, Edge, Firefox, Safari). No server is required.
-3. Ensure localStorage is enabled; the app saves progress automatically in your browser.
+1. Clone or copy the repository locally.
+2. Open `index.html` in Chrome, Edge, Firefox, or Safari.
+3. Keep browser storage enabled so the app can persist your task data.
 
-Optional: serve locally for nicer URLs using `npx serve` or any static file host.
+Optional:
+- If you prefer a local URL instead of opening the file directly, serve the folder with something like `npx serve`.

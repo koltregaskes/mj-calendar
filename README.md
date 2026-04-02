@@ -1,17 +1,48 @@
 # Midjourney Review Calendar
 
-A simple web calendar to track your daily Midjourney workflow across multiple tasks (images, videos, publishing, and any extras). It runs locally in your browser, saves progress automatically, and keeps your data private.
+A local-first daily checklist tool for tracking your Midjourney production workflow.
 
-## What you get
-- Modern calendar UI tuned for daily task checklists.
-- Color-coded progress per day (red when empty → amber as you tick → green on completion).
-- Automatic saving in your browser the moment you tick a box (no server required).
-- Import/export JSON backups.
-- Manageable task list with defaults for Midjourney routines.
-- 2026-ready visuals with keyboard support and responsive layout.
+This is designed around the way you work in batches across each day, rather than as a generic calendar app.
 
-## AI-ready by design
-- Clear JSON schema for MCP/agent pipelines and llm-friendly audits.
-- Simple file layout so AI tools (skills, tests, or assistants) can extend tasks or automate publishing flows.
+## Core Workflow
 
-See [USAGE.md](USAGE.md) for quick steps, [SETUP.md](SETUP.md) for running the page, and [TROUBLESHOOTING.md](TROUBLESHOOTING.md) if you hit issues.
+The default checklist is built around the main stages of your image pipeline:
+
+1. Review images
+2. Videos
+3. Upscales
+4. Publish
+
+You can also add extra reusable task presets if another recurring stage becomes part of the workflow.
+
+## What It Already Does
+
+- Day-by-day checklist tracking with visible progress
+- Built-in default workflow for Review images, Videos, Upscales, and Publish
+- Add and delete reusable task presets
+- Add a short note to any day for reminders, blockers, or batch context
+- Reset just the selected day or clear the whole calendar
+- Restore the standard workflow at any time if experiments get messy
+- Jump to any month or exact date
+- Import and export JSON backups
+- Save everything locally in the browser with no backend
+
+## Why This Repo Matters
+
+This is a strong candidate for eventual migration into the Agent Workspace 2 hub system because the workflow is already clear and the tool surface is small.
+
+## Running It
+
+1. Open [index.html](index.html) in a modern browser.
+2. Pick a day.
+3. Tick off the Midjourney work you completed.
+4. Add extra presets only if your process changes.
+
+## Key Files
+
+- `index.html` - app shell
+- `app.js` - checklist logic, storage, import, and export
+- `style.css` - UI styling
+- `SETUP.md` - quick setup notes
+- `USAGE.md` - how to use it day to day
+- `TROUBLESHOOTING.md` - common fixes

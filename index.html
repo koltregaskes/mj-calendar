@@ -10,11 +10,19 @@
   <body>
     <main class="shell">
       <header class="hero">
-        <div>
-          <p class="eyebrow">AI-first Midjourney cockpit</p>
+        <div class="hero__copy">
+          <p class="eyebrow">Midjourney production calendar</p>
           <h1>Review calendar</h1>
-          <p class="lede">Track images, videos, publishing, and any extras with a future-ready calendar.</p>
+          <p class="lede">
+            Track reviews, exports, publishing, and any custom checkpoints in a private browser-only planner.
+          </p>
+          <div class="hero__chips" aria-label="Calendar highlights">
+            <span class="hero-chip">Local-only storage</span>
+            <span class="hero-chip">JSON import and export</span>
+            <span class="hero-chip">Keyboard-friendly day navigation</span>
+          </div>
         </div>
+
         <div class="hero__actions">
           <button id="exportBtn" class="btn btn--ghost">Export JSON</button>
           <button id="importBtn" class="btn btn--primary">Import JSON</button>
@@ -25,31 +33,38 @@
       <section class="panel-grid">
         <section class="panel">
           <div class="panel__head">
-            <div class="form-inline">
-              <label for="jumpMonthInput">Month</label>
-              <input type="month" id="jumpMonthInput" />
+            <div class="panel__head-group">
+              <div class="form-inline">
+                <label for="jumpMonthInput">Month</label>
+                <input type="month" id="jumpMonthInput" />
+              </div>
+              <div class="form-inline">
+                <label for="jumpDateInput">Jump to date</label>
+                <input type="date" id="jumpDateInput" />
+              </div>
             </div>
-            <div class="form-inline">
-              <label for="jumpDateInput">Jump to date</label>
-              <input type="date" id="jumpDateInput" />
-            </div>
+
             <div class="nav-buttons">
-              <button id="prevMonthBtn" class="btn btn--ghost" aria-label="Previous Month">◀</button>
-              <button id="nextMonthBtn" class="btn btn--ghost" aria-label="Next Month">▶</button>
+              <button id="prevMonthBtn" class="btn btn--ghost" aria-label="Previous month">&larr;</button>
+              <button id="nextMonthBtn" class="btn btn--ghost" aria-label="Next month">&rarr;</button>
             </div>
           </div>
 
           <div class="calendar-header">
-            <h2 id="monthYear"></h2>
-            <div id="progressStats" class="status status--info">Loading…</div>
+            <div>
+              <p class="eyebrow">Current month</p>
+              <h2 id="monthYear"></h2>
+            </div>
+            <div id="progressStats" class="status status--info">Loading...</div>
           </div>
 
           <div class="calendar-days">
             <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
           </div>
-          <section id="calendarGrid" class="calendar-grid" aria-label="Calendar Dates"></section>
+          <section id="calendarGrid" class="calendar-grid" aria-label="Calendar dates"></section>
+
           <div class="panel__footer">
-            <button id="clearAllBtn" class="btn btn--outline">Clear All</button>
+            <button id="clearAllBtn" class="btn btn--outline">Clear all</button>
           </div>
         </section>
 
@@ -60,17 +75,40 @@
               <h3 id="selectedDateLabel"></h3>
               <p id="taskSummary" class="subtle"></p>
             </div>
-            <div class="task-meter" aria-hidden="true">
-              <span></span><span></span><span></span><span></span><span></span>
+
+            <div class="day-actions">
+              <div class="task-meter" aria-hidden="true">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <button id="resetDayBtn" class="btn btn--ghost">Reset day</button>
             </div>
           </div>
+
           <div id="taskList" class="task-list" aria-live="polite"></div>
+
+          <div class="notes-block">
+            <label for="dayNotesInput" class="subtle">Day note</label>
+            <textarea
+              id="dayNotesInput"
+              class="notes-input"
+              rows="4"
+              placeholder="Optional note for this date: what batch you worked on, blockers, or reminders."
+            ></textarea>
+          </div>
+
           <form id="addTaskForm" class="add-task" autocomplete="off">
-            <input id="addTaskInput" type="text" placeholder="Add another task (e.g., Publish to Instagram)" />
-            <button type="submit" class="btn btn--primary">Add</button>
+            <input id="addTaskInput" type="text" placeholder="Add another task preset" />
+            <button type="submit" class="btn btn--primary">Add preset</button>
           </form>
+
           <div class="preset-row">
-            <p class="subtle">Task presets</p>
+            <div class="preset-row__head">
+              <div>
+                <p class="subtle">Task presets</p>
+                <p class="subtle">Delete presets you no longer need. Existing progress for that preset is removed too.</p>
+              </div>
+              <button id="restoreDefaultsBtn" class="btn btn--outline" type="button">Restore standard workflow</button>
+            </div>
             <div id="presetsList" class="pill-row"></div>
           </div>
         </section>
