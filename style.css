@@ -497,6 +497,15 @@ body::before {
   background: rgba(255, 255, 255, 0.12);
 }
 
+.site-footer {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 242, 220, 0.62);
+}
+
 @media (max-width: 1024px) {
   body {
     padding: 18px;
