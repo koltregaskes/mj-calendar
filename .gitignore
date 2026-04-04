@@ -1,0 +1,22 @@
+# Local planning and working notes
+PLAN.md
+TODO.local.md
+TASKS.local.md
+*.local.md
+notes-local/
+planning-local/
+.local-notes/
+
+# Local backup and export leftovers
+*_1.js
+*_1.css
+*_2.css
+*_3.css
+*.zip
+*.tmp
+*.bak
+*.backup
+
+# OS
+.DS_Store
+Thumbs.db
