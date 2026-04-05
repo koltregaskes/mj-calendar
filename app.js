@@ -26,6 +26,7 @@ class MidjourneyCalendar {
     this.renderTaskPanel();
     this.renderPresets();
     this.updateProgressStats();
+    this.renderInsightCards();
     this.syncJumpInputs();
   }
 
@@ -41,6 +42,7 @@ class MidjourneyCalendar {
       exportBtn: document.getElementById('exportBtn'),
       importBtn: document.getElementById('importBtn'),
       importInput: document.getElementById('importInput'),
+      todayBtn: document.getElementById('todayBtn'),
       clearAllBtn: document.getElementById('clearAllBtn'),
       resetDayBtn: document.getElementById('resetDayBtn'),
       taskList: document.getElementById('taskList'),
@@ -50,7 +52,8 @@ class MidjourneyCalendar {
       addTaskForm: document.getElementById('addTaskForm'),
       addTaskInput: document.getElementById('addTaskInput'),
       presetsList: document.getElementById('presetsList'),
-      restoreDefaultsBtn: document.getElementById('restoreDefaultsBtn')
+      restoreDefaultsBtn: document.getElementById('restoreDefaultsBtn'),
+      insightCards: document.getElementById('insightCards')
     };
   }
 
@@ -182,6 +185,7 @@ class MidjourneyCalendar {
     this.renderTaskPanel();
     this.renderPresets();
     this.updateProgressStats();
+    this.renderInsightCards();
     this.syncJumpInputs();
   }
 
@@ -473,6 +477,116 @@ class MidjourneyCalendar {
     }
   }
 
+  hasActivityForDate(date) {
+    const { entry } = this.getDayEntry(date, false);
+    const completed = this.tasks.reduce((sum, task) => sum + (entry.tasks[task.id] ? 1 : 0), 0);
+    return completed > 0 || Boolean(entry.notes);
+  }
+
+  calculateCurrentStreak() {
+    let streak = 0;
+    const cursor = new Date(this.currentDate);
+    cursor.setHours(0, 0, 0, 0);
+
+    while (this.hasActivityForDate(cursor)) {
+      streak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+
+    return streak;
+  }
+
+  calculateBestStreak() {
+    const keys = Object.keys(this.days).sort();
+    let best = 0;
+    let current = 0;
+    let previousDate = null;
+
+    keys.forEach((key) => {
+      const [year, month, day] = key.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
+
+      if (!this.hasActivityForDate(date)) {
+        return;
+      }
+
+      if (!previousDate) {
+        current = 1;
+      } else {
+        const difference = Math.round((date - previousDate) / 86400000);
+        current = difference === 1 ? current + 1 : 1;
+      }
+
+      previousDate = date;
+      best = Math.max(best, current);
+    });
+
+    return best;
+  }
+
+  renderInsightCards() {
+    const { insightCards } = this.dom;
+    const visibleYear = this.viewDate.getFullYear();
+    const visibleMonth = this.viewDate.getMonth();
+    const daysInMonth = new Date(visibleYear, visibleMonth + 1, 0).getDate();
+
+    let activeDays = 0;
+    let notedDays = 0;
+    let fullCompletionDays = 0;
+
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const date = new Date(visibleYear, visibleMonth, day);
+      const { entry } = this.getDayEntry(date, false);
+      const { pct, total } = this.getDayProgress(date);
+
+      if (this.hasActivityForDate(date)) {
+        activeDays += 1;
+      }
+
+      if (entry.notes) {
+        notedDays += 1;
+      }
+
+      if (pct === 1 && total > 0) {
+        fullCompletionDays += 1;
+      }
+    }
+
+    const currentStreak = this.calculateCurrentStreak();
+    const bestStreak = this.calculateBestStreak();
+
+    const cards = [
+      {
+        label: 'Current streak',
+        value: `${currentStreak} day${currentStreak === 1 ? '' : 's'}`,
+        note: 'Consecutive active days up to today.'
+      },
+      {
+        label: 'Best streak',
+        value: `${bestStreak} day${bestStreak === 1 ? '' : 's'}`,
+        note: 'Best recorded run with activity.'
+      },
+      {
+        label: 'Active days',
+        value: `${activeDays}/${daysInMonth}`,
+        note: 'Days this month with work or notes saved.'
+      },
+      {
+        label: 'Fully done',
+        value: `${fullCompletionDays}`,
+        note: `${notedDays} day${notedDays === 1 ? '' : 's'} with notes this month.`
+      }
+    ];
+
+    insightCards.innerHTML = '';
+    cards.forEach((card) => {
+      const article = document.createElement('article');
+      article.className = 'insight-card';
+      article.innerHTML = `<p>${card.label}</p><strong>${card.value}</strong><span>${card.note}</span>`;
+      insightCards.appendChild(article);
+    });
+  }
+
   setupEventListeners() {
     const {
       prevBtn,
@@ -482,6 +596,7 @@ class MidjourneyCalendar {
       exportBtn,
       importBtn,
       importInput,
+      todayBtn,
       clearAllBtn,
       resetDayBtn,
       addTaskForm,
@@ -501,6 +616,7 @@ class MidjourneyCalendar {
       this.viewDate.setMonth(this.viewDate.getMonth() + 1);
       this.renderCalendar();
       this.updateProgressStats();
+      this.renderInsightCards();
       this.syncJumpInputs();
     });
 
@@ -513,6 +629,7 @@ class MidjourneyCalendar {
       this.viewDate = new Date(year, month - 1, 1);
       this.renderCalendar();
       this.updateProgressStats();
+      this.renderInsightCards();
       this.syncJumpInputs();
     });
 
@@ -528,6 +645,18 @@ class MidjourneyCalendar {
       this.renderCalendar(flashDateKey);
       this.renderTaskPanel();
       this.updateProgressStats();
+      this.renderInsightCards();
+      this.syncJumpInputs();
+    });
+
+    todayBtn.addEventListener('click', () => {
+      const flashDateKey = this.formatDateKey(this.currentDate);
+      this.viewDate = new Date(this.currentDate);
+      this.selectedDate = new Date(this.currentDate);
+      this.renderCalendar(flashDateKey);
+      this.renderTaskPanel();
+      this.updateProgressStats();
+      this.renderInsightCards();
       this.syncJumpInputs();
     });
 
@@ -572,7 +701,7 @@ class MidjourneyCalendar {
       addTaskInput.focus();
     });
 
-    dayNotesInput.addEventListener('change', () => {
+    dayNotesInput.addEventListener('input', () => {
       this.updateDayNotes(dayNotesInput.value);
     });
 
