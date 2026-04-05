@@ -1,0 +1,18 @@
+{
+  "name": "MJ Calendar",
+  "short_name": "MJ Calendar",
+  "description": "A local-first production checklist for Midjourney review images, videos, upscales, and publishing.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#18120d",
+  "theme_color": "#18120d",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

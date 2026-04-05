@@ -26,6 +26,7 @@ You can also add extra reusable task presets if another recurring stage becomes 
 - Jump to any month or exact date
 - Import and export JSON backups
 - Save everything locally in the browser with no backend
+- Install as a lightweight PWA on desktop or Android
 
 ## Why This Repo Matters
 

@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="MJ Calendar is a local-first production checklist for review images, videos, upscales, and publish work."
+    />
+    <meta name="theme-color" content="#18120d" />
+    <link rel="manifest" href="manifest.json" />
     <title>Midjourney Review Progress Calendar</title>
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -24,6 +30,7 @@
         </div>
 
         <div class="hero__actions">
+          <button id="installAppBtn" class="btn btn--ghost" type="button" hidden>Install app</button>
           <button id="exportBtn" class="btn btn--ghost">Export JSON</button>
           <button id="importBtn" class="btn btn--primary">Import JSON</button>
           <input type="file" id="importInput" accept="application/json" class="hidden" />
@@ -119,6 +126,7 @@
       </footer>
     </main>
 
+    <script src="pwa.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
