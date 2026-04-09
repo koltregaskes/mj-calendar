@@ -49,3 +49,9 @@ This is a strong candidate for eventual migration into the Agent Workspace 2 hub
 - `SETUP.md` - quick setup notes
 - `USAGE.md` - how to use it day to day
 - `TROUBLESHOOTING.md` - common fixes
+
+## Local-Only Files
+
+- `.autolab/` is used for internal AutoResearch and should remain untracked
+- `.env*` files are local-only
+- `.local/` and `*.local.md` are for planning notes and are ignored
