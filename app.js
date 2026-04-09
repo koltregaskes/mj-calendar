@@ -43,6 +43,7 @@ class MidjourneyCalendar {
       importBtn: document.getElementById('importBtn'),
       importInput: document.getElementById('importInput'),
       todayBtn: document.getElementById('todayBtn'),
+      todaySummaryBtn: document.getElementById('todaySummaryBtn'),
       clearAllBtn: document.getElementById('clearAllBtn'),
       resetDayBtn: document.getElementById('resetDayBtn'),
       taskList: document.getElementById('taskList'),
@@ -69,6 +70,22 @@ class MidjourneyCalendar {
   persistState() {
     localStorage.setItem(STORAGE_KEYS.tasks, JSON.stringify(this.tasks));
     localStorage.setItem(STORAGE_KEYS.days, JSON.stringify(this.days));
+  }
+
+  async copyToClipboard(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (_) {
+      const helper = document.createElement('textarea');
+      helper.value = text;
+      helper.setAttribute('readonly', 'readonly');
+      helper.style.position = 'absolute';
+      helper.style.left = '-9999px';
+      document.body.appendChild(helper);
+      helper.select();
+      document.execCommand('copy');
+      document.body.removeChild(helper);
+    }
   }
 
   formatDateKey(date) {
@@ -559,22 +576,22 @@ class MidjourneyCalendar {
       {
         label: 'Current streak',
         value: `${currentStreak} day${currentStreak === 1 ? '' : 's'}`,
-        note: 'Consecutive active days up to today.'
+        note: 'Keep the streak alive by logging at least one task or note each day.'
       },
       {
         label: 'Best streak',
         value: `${bestStreak} day${bestStreak === 1 ? '' : 's'}`,
-        note: 'Best recorded run with activity.'
+        note: 'Longest run of active days in this calendar.'
       },
       {
         label: 'Active days',
         value: `${activeDays}/${daysInMonth}`,
-        note: 'Days this month with work or notes saved.'
+        note: 'Any day with a completed task or a saved note.'
       },
       {
         label: 'Fully done',
         value: `${fullCompletionDays}`,
-        note: `${notedDays} day${notedDays === 1 ? '' : 's'} with notes this month.`
+        note: `${notedDays} day${notedDays === 1 ? '' : 's'} with notes to revisit later.`
       }
     ];
 
@@ -597,6 +614,7 @@ class MidjourneyCalendar {
       importBtn,
       importInput,
       todayBtn,
+      todaySummaryBtn,
       clearAllBtn,
       resetDayBtn,
       addTaskForm,
@@ -658,6 +676,12 @@ class MidjourneyCalendar {
       this.updateProgressStats();
       this.renderInsightCards();
       this.syncJumpInputs();
+    });
+
+    todaySummaryBtn.addEventListener('click', async () => {
+      const summary = this.buildDaySummary(this.currentDate);
+      await this.copyToClipboard(summary);
+      alert('Today summary copied to clipboard.');
     });
 
     exportBtn.addEventListener('click', () => this.exportData());
@@ -821,6 +845,30 @@ class MidjourneyCalendar {
     } finally {
       this.dom.importInput.value = '';
     }
+  }
+
+  buildDaySummary(date) {
+    const { entry } = this.getDayEntry(date);
+    const { completed, total, pct } = this.getDayProgress(date);
+    const completedTasks = this.tasks.filter((task) => entry.tasks[task.id]);
+    const pendingTasks = this.tasks.filter((task) => !entry.tasks[task.id]);
+    const formattedDate = new Intl.DateTimeFormat('en-GB', { dateStyle: 'full' }).format(date);
+
+    return [
+      `${formattedDate}`,
+      `Progress: ${completed}/${total} tasks (${Math.round(pct * 100)}%)`,
+      '',
+      'Completed',
+      completedTasks.length
+        ? completedTasks.map((task) => `- ${task.label}`).join('\n')
+        : '- None yet',
+      '',
+      'Remaining',
+      pendingTasks.length ? pendingTasks.map((task) => `- ${task.label}`).join('\n') : '- None',
+      '',
+      'Notes',
+      entry.notes ? entry.notes : 'No notes saved.'
+    ].join('\n');
   }
 }
 
