@@ -21,3 +21,14 @@ planning-local/
 # OS
 .DS_Store
 Thumbs.db
+
+# AutoResearch
+.autolab/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Local launch helpers
+start.cmd
