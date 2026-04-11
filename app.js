@@ -591,7 +591,7 @@ class MidjourneyCalendar {
       {
         label: 'Fully done',
         value: `${fullCompletionDays}`,
-        note: `${notedDays} day${notedDays === 1 ? '' : 's'} with notes to revisit later.`
+        note: `Days where every task is complete. ${notedDays} day${notedDays === 1 ? '' : 's'} also have notes saved for follow-up.`
       }
     ];
 

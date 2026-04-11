@@ -13,6 +13,8 @@ planning-local/
 *_1.css
 *_2.css
 *_3.css
+tmp-*.out
+tmp-*.err
 *.zip
 *.tmp
 *.bak
