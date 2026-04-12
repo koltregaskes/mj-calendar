@@ -44,6 +44,7 @@ class MidjourneyCalendar {
       importInput: document.getElementById('importInput'),
       todayBtn: document.getElementById('todayBtn'),
       todaySummaryBtn: document.getElementById('todaySummaryBtn'),
+      copyDaySummaryBtn: document.getElementById('copyDaySummaryBtn'),
       clearAllBtn: document.getElementById('clearAllBtn'),
       resetDayBtn: document.getElementById('resetDayBtn'),
       taskList: document.getElementById('taskList'),
@@ -615,6 +616,7 @@ class MidjourneyCalendar {
       importInput,
       todayBtn,
       todaySummaryBtn,
+      copyDaySummaryBtn,
       clearAllBtn,
       resetDayBtn,
       addTaskForm,
@@ -682,6 +684,12 @@ class MidjourneyCalendar {
       const summary = this.buildDaySummary(this.currentDate);
       await this.copyToClipboard(summary);
       alert('Today summary copied to clipboard.');
+    });
+
+    copyDaySummaryBtn.addEventListener('click', async () => {
+      const summary = this.buildDaySummary(this.selectedDate);
+      await this.copyToClipboard(summary);
+      alert('Selected day summary copied to clipboard.');
     });
 
     exportBtn.addEventListener('click', () => this.exportData());
