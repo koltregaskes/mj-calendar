@@ -21,7 +21,8 @@ You can also add extra reusable task presets if another recurring stage becomes 
 - Built-in default workflow for Review images, Videos, Upscales, and Publish
 - Add and delete reusable task presets
 - Add a short note to any day for reminders, blockers, or batch context
-- Monthly insight cards for streaks, active days, and note coverage
+- Monthly insight cards for streaks, active days, note coverage, and the lagging production stage
+- Copy a month summary that lists each preset's completion and which stage is behind
 - Reset just the selected day or clear the whole calendar
 - Restore the standard workflow at any time if experiments get messy
 - Jump straight back to today with one click

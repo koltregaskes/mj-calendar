@@ -44,6 +44,7 @@ class MidjourneyCalendar {
       importInput: document.getElementById('importInput'),
       todayBtn: document.getElementById('todayBtn'),
       todaySummaryBtn: document.getElementById('todaySummaryBtn'),
+      copyMonthSummaryBtn: document.getElementById('copyMonthSummaryBtn'),
       copyDaySummaryBtn: document.getElementById('copyDaySummaryBtn'),
       clearAllBtn: document.getElementById('clearAllBtn'),
       resetDayBtn: document.getElementById('resetDayBtn'),
@@ -299,12 +300,8 @@ class MidjourneyCalendar {
 
     const year = this.viewDate.getFullYear();
     const month = this.viewDate.getMonth();
-    const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
 
-    monthYear.textContent = `${monthNames[month]} ${year}`;
+    monthYear.textContent = `${this.monthNames()[month]} ${year}`;
 
     const firstOfMonth = new Date(year, month, 1);
     const startDate = new Date(firstOfMonth);
@@ -458,20 +455,30 @@ class MidjourneyCalendar {
     });
   }
 
-  updateProgressStats() {
-    const { progressStats } = this.dom;
-    const visibleYear = this.viewDate.getFullYear();
-    const visibleMonth = this.viewDate.getMonth();
-    const daysInMonth = new Date(visibleYear, visibleMonth + 1, 0).getDate();
+  monthNames() {
+    return [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+  }
+
+  getMonthSnapshot(date = this.viewDate) {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const stageCounts = Object.fromEntries(this.tasks.map((task) => [task.id, 0]));
 
     let completedDays = 0;
     let partialDays = 0;
     let totalTasks = 0;
     let completedTasks = 0;
+    let activeDays = 0;
+    let notedDays = 0;
 
     for (let day = 1; day <= daysInMonth; day += 1) {
-      const date = new Date(visibleYear, visibleMonth, day);
-      const { completed, total, pct } = this.getDayProgress(date);
+      const cellDate = new Date(year, month, day);
+      const { entry } = this.getDayEntry(cellDate, false);
+      const { completed, total, pct } = this.getDayProgress(cellDate);
       totalTasks += total;
       completedTasks += completed;
 
@@ -480,9 +487,75 @@ class MidjourneyCalendar {
       } else if (pct > 0) {
         partialDays += 1;
       }
+
+      if (this.hasActivityForDate(cellDate)) {
+        activeDays += 1;
+      }
+
+      if (entry.notes) {
+        notedDays += 1;
+      }
+
+      this.tasks.forEach((task) => {
+        if (entry.tasks[task.id]) {
+          stageCounts[task.id] += 1;
+        }
+      });
     }
 
-    const pct = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    const stages = this.tasks.map((task) => ({
+      id: task.id,
+      label: task.label,
+      completedDays: stageCounts[task.id] || 0
+    }));
+
+    return {
+      year,
+      month,
+      label: `${this.monthNames()[month]} ${year}`,
+      daysInMonth,
+      completedDays,
+      partialDays,
+      totalTasks,
+      completedTasks,
+      pct: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
+      activeDays,
+      notedDays,
+      stages,
+      lagging: this.describeLaggingStages(stages, daysInMonth)
+    };
+  }
+
+  describeLaggingStages(stages, daysInMonth) {
+    if (stages.length === 0) {
+      return {
+        title: 'No presets',
+        detail: 'Add a preset before stage progress can be compared.'
+      };
+    }
+
+    const lowest = Math.min(...stages.map((stage) => stage.completedDays));
+    const highest = Math.max(...stages.map((stage) => stage.completedDays));
+    const lagging = stages.filter((stage) => stage.completedDays === lowest);
+
+    if (lowest === highest) {
+      return {
+        title: 'Stages are level',
+        detail: `Every preset is done on ${lowest}/${daysInMonth} day${lowest === 1 ? '' : 's'} this month.`
+      };
+    }
+
+    const names = lagging.map((stage) => stage.label).join(', ');
+    return {
+      title: lagging.length === 1 ? lagging[0].label : `${lagging.length} stages behind`,
+      detail: `${names} ${lagging.length === 1 ? 'is' : 'are'} done on ${lowest}/${daysInMonth} days, behind the furthest stage at ${highest}/${daysInMonth}.`
+    };
+  }
+
+  updateProgressStats() {
+    const { progressStats } = this.dom;
+    const month = this.getMonthSnapshot();
+    const { completedDays, partialDays, completedTasks, totalTasks, pct } = month;
     progressStats.textContent = `${completedDays} complete days, ${partialDays} in progress, ${completedTasks}/${totalTasks} tasks (${pct}%) this month`;
     progressStats.className = 'status';
 
@@ -544,32 +617,7 @@ class MidjourneyCalendar {
 
   renderInsightCards() {
     const { insightCards } = this.dom;
-    const visibleYear = this.viewDate.getFullYear();
-    const visibleMonth = this.viewDate.getMonth();
-    const daysInMonth = new Date(visibleYear, visibleMonth + 1, 0).getDate();
-
-    let activeDays = 0;
-    let notedDays = 0;
-    let fullCompletionDays = 0;
-
-    for (let day = 1; day <= daysInMonth; day += 1) {
-      const date = new Date(visibleYear, visibleMonth, day);
-      const { entry } = this.getDayEntry(date, false);
-      const { pct, total } = this.getDayProgress(date);
-
-      if (this.hasActivityForDate(date)) {
-        activeDays += 1;
-      }
-
-      if (entry.notes) {
-        notedDays += 1;
-      }
-
-      if (pct === 1 && total > 0) {
-        fullCompletionDays += 1;
-      }
-    }
-
+    const month = this.getMonthSnapshot();
     const currentStreak = this.calculateCurrentStreak();
     const bestStreak = this.calculateBestStreak();
 
@@ -586,13 +634,18 @@ class MidjourneyCalendar {
       },
       {
         label: 'Active days',
-        value: `${activeDays}/${daysInMonth}`,
+        value: `${month.activeDays}/${month.daysInMonth}`,
         note: 'Any day with a completed task or a saved note.'
       },
       {
         label: 'Fully done',
-        value: `${fullCompletionDays}`,
-        note: `Days where every task is complete. ${notedDays} day${notedDays === 1 ? '' : 's'} also have notes saved for follow-up.`
+        value: `${month.completedDays}`,
+        note: `Days where every task is complete. ${month.notedDays} day${month.notedDays === 1 ? '' : 's'} also have notes saved for follow-up.`
+      },
+      {
+        label: 'Lagging stage',
+        value: month.lagging.title,
+        note: month.lagging.detail
       }
     ];
 
@@ -600,7 +653,13 @@ class MidjourneyCalendar {
     cards.forEach((card) => {
       const article = document.createElement('article');
       article.className = 'insight-card';
-      article.innerHTML = `<p>${card.label}</p><strong>${card.value}</strong><span>${card.note}</span>`;
+      const label = document.createElement('p');
+      const value = document.createElement('strong');
+      const note = document.createElement('span');
+      label.textContent = card.label;
+      value.textContent = card.value;
+      note.textContent = card.note;
+      article.append(label, value, note);
       insightCards.appendChild(article);
     });
   }
@@ -616,6 +675,7 @@ class MidjourneyCalendar {
       importInput,
       todayBtn,
       todaySummaryBtn,
+      copyMonthSummaryBtn,
       copyDaySummaryBtn,
       clearAllBtn,
       resetDayBtn,
@@ -629,6 +689,7 @@ class MidjourneyCalendar {
       this.viewDate.setMonth(this.viewDate.getMonth() - 1);
       this.renderCalendar();
       this.updateProgressStats();
+      this.renderInsightCards();
       this.syncJumpInputs();
     });
 
@@ -684,6 +745,12 @@ class MidjourneyCalendar {
       const summary = this.buildDaySummary(this.currentDate);
       await this.copyToClipboard(summary);
       alert('Today summary copied to clipboard.');
+    });
+
+    copyMonthSummaryBtn.addEventListener('click', async () => {
+      const summary = this.buildMonthSummary(this.viewDate);
+      await this.copyToClipboard(summary);
+      alert('Month summary copied to clipboard.');
     });
 
     copyDaySummaryBtn.addEventListener('click', async () => {
@@ -853,6 +920,35 @@ class MidjourneyCalendar {
     } finally {
       this.dom.importInput.value = '';
     }
+  }
+
+  buildMonthSummary(date = this.viewDate) {
+    const month = this.getMonthSnapshot(date);
+    const currentStreak = this.calculateCurrentStreak();
+    const bestStreak = this.calculateBestStreak();
+    const stageLines = month.stages.length
+      ? month.stages
+          .map((stage) => `- ${stage.label}: ${stage.completedDays}/${month.daysInMonth} days`)
+          .join('\n')
+      : '- No presets yet';
+
+    return [
+      month.label,
+      `${month.completedDays} complete days, ${month.partialDays} in progress, ${month.completedTasks}/${month.totalTasks} tasks (${month.pct}%) this month`,
+      '',
+      'Stages',
+      stageLines,
+      '',
+      'Lagging stage',
+      month.lagging.detail,
+      '',
+      'Notes',
+      `${month.notedDays} day${month.notedDays === 1 ? '' : 's'} have notes saved.`,
+      '',
+      'Streaks',
+      `Current streak: ${currentStreak} day${currentStreak === 1 ? '' : 's'}`,
+      `Best streak: ${bestStreak} day${bestStreak === 1 ? '' : 's'}`
+    ].join('\n');
   }
 
   buildDaySummary(date) {
