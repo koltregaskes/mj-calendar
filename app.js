@@ -274,10 +274,14 @@ class MidjourneyCalendar {
     this.refreshUi(key);
   }
 
-  updateDayNotes(value) {
+  updateDayNotes(value, { trimEdges = false } = {}) {
     const { key, entry } = this.getDayEntry(this.selectedDate);
-    entry.notes = value.trim();
+    const text = typeof value === 'string' ? value : '';
+    entry.notes = trimEdges ? text.trim() : text;
     this.refreshUi(key);
+    if (trimEdges && document.activeElement === this.dom.dayNotesInput) {
+      this.dom.dayNotesInput.value = entry.notes;
+    }
   }
 
   restoreDefaultTasks() {
@@ -383,7 +387,9 @@ class MidjourneyCalendar {
         ? `${completed}/${total} tasks done (${Math.round(pct * 100)}%).${noteSummary}`
         : `No task presets yet. Add one below to start tracking.${noteSummary}`;
     this.dom.resetDayBtn.disabled = completed === 0 && !hasNotes;
-    this.dom.dayNotesInput.value = entry.notes || '';
+    if (document.activeElement !== this.dom.dayNotesInput) {
+      this.dom.dayNotesInput.value = entry.notes || '';
+    }
 
     taskList.innerHTML = '';
 
@@ -802,6 +808,10 @@ class MidjourneyCalendar {
 
     dayNotesInput.addEventListener('input', () => {
       this.updateDayNotes(dayNotesInput.value);
+    });
+
+    dayNotesInput.addEventListener('blur', () => {
+      this.updateDayNotes(dayNotesInput.value, { trimEdges: true });
     });
 
     restoreDefaultsBtn.addEventListener('click', () => {
